@@ -1,0 +1,25 @@
+Tiny Pack:
+
+0 - An Adventure Begins (Menu)
+Duration: (03:00)
+BPM: 60
+
+1 - Enchanted Landscape (Dungeon 1)
+Duration: (02:11)
+BPM: 55
+
+2 - Quiet Village (Town 1)
+Duration: (02:15)
+BPM: 64
+
+3 - Exploring the Area (Travel 1)
+Duration: (01:34)
+BPM: 97
+
+4 - Foes (Battle 1)
+Duration: (01:30)
+BPM: 170
+
+Stingers:
+Epic Win (Victory 1)
+Bad Move (Defeat 1)
