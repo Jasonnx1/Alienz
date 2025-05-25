@@ -19,7 +19,7 @@ end
 
 function love.load()
     --optional settings for window
-    love.window.setMode(640, 640, {resizable=false, vsync=true, minwidth=200, minheight=200})
+    love.window.setMode(640, 640, {resizable=true, vsync=true, minwidth=640, minheight=640})
     game = Game()
     textBox = TextBox()
     textBox:queueText("Welcome to Alienz ! -Spacebar to continue-")

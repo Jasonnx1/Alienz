@@ -14,6 +14,7 @@ function Shop:new()
     self.menuOption = 1
 
     self.shoppingDone = false
+    self.fadeInDone = false
 
 
 end
@@ -26,7 +27,7 @@ end
 
 function Shop:keyPressed(key)
 
-    if(self.shoppingDone == false) then
+    if(self.shoppingDone == false and self.fadeInDone == true) then
 
         if(key == "up" or key == "w") then
 

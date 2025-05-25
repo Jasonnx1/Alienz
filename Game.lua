@@ -101,22 +101,23 @@ function Game:nextFight()
     self.fightCounter = self.fightCounter + 1
 
 
+
     local r = 1
 
 
-    if(self.fightCounter < 3) then
+    if(self.fightCounter < 10) then
         r = math.random(1,3)
 
         self.fightLevel = self.fightLevel + 1
        
         
-    elseif(self.fightCounter < 5) then
+    elseif(self.fightCounter < 15) then
         r = math.random(1,6)
 
         self.fightLevel = self.fightLevel + 5
     
 
-    elseif(self.fightCounter < 8) then
+    elseif(self.fightCounter < 20) then
         r = math.random(1,8)
         self.fightLevel = self.fightLevel * 1.5
     end
@@ -219,9 +220,11 @@ function Game:update(dt)
 
             if(self.fadeAwayTimer < 0) then
                 self.shop.shoppingDone = false
+                self.shop.fadeInDone = false
+                self.shop.menuOption = 1
                 local a = self:nextFight()
                 self.combat = Combat(a, self.player.myAlienz[1])
-                self.state = 2            
+                self.state = 2         
             end    
         end
     end
@@ -231,11 +234,18 @@ function Game:update(dt)
 
          if((self.fadeAwayTimer >= self.fadeAwayMaxTimer) and self.tutorial == true) then
             self.tutorial = false
+            self.shop.fadeInDone = true
             textBox:queueText("Between battles you will enter the shop")
             textBox:queueText("Using the gold you get from defeating Alienz")
             textBox:queueText("You can either upgrade your disk's space")
             textBox:queueText("Or buy significant upgrades for your Alienz")
+         elseif ((self.fadeAwayTimer >= self.fadeAwayMaxTimer)) then
+            self.shop.fadeInDone = true
          end
+
+         
+
+
     end
 
 

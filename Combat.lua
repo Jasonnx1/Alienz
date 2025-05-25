@@ -7,6 +7,7 @@ function Combat:new(enemyAlienz, activePlayerAlienz)
     self.enemyAlienz = enemyAlienz
     self.activePlayerAlienz = activePlayerAlienz
 
+    self.activePlayerAlienz:resetStats()
     self.activePlayerAlienz:applyBuffs(game.player.attUpgrade, game.player.defUpgrade, game.player.regenUpgrade)
 
 
@@ -288,9 +289,9 @@ function Combat:keyPressed(key)
                         textBox:queueText("You successfully uploaded" .. self.enemyAlienz.name)
                         game.player.diskSpace = 0
                         for i, v in ipairs(game.player.myAlienz) do
-                            print("before" .. tostring(#game.player.myAlienz))
+                            
                             table.remove(game.player.myAlienz, #game.player.myAlienz)
-                            print("after" .. tostring(#game.player.myAlienz))
+                            
                         end
                         table.insert(game.player.myAlienz, 1, self.enemyAlienz)
                         game.player.diskSpace = self.enemyAlienz.diskSpace

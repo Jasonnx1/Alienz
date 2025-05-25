@@ -41,8 +41,8 @@ function Alienz:getAlienz(level)
 
     local ali = Alienz(hp,att,def,level,self.name, self.sprite, self.attacks, self.diskSpaceValue)
 
-    ali.goldValue = math.random(5,10)
-    ali.exp = 1  
+    ali.goldValue = math.random(5,10) + (math.floor(math.random() * ali.level))
+    ali.exp = 1
 
     return ali
 end
