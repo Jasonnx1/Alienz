@@ -125,9 +125,10 @@ function Game:nextFight()
     self.fightLevel = math.floor(self.fightLevel)
     local a = self.alienz[r]:getAlienz(self.fightLevel)
 
-    if(self.fightCounter < 3) then
+    if(self.fightCounter < 8) then
         a.ap = 0
     end
+
 
     return a
 

@@ -7,19 +7,23 @@ local MAX_DT = 0.1
 font = love.graphics.newFont("assets/font.ttf",20)
 
 
+
 function love.reload()
 
     game = Game()
     game.tutorialSkip = true
+    math.randomseed(os.time())  -- Seed with the current system time
     textBox = TextBox()
     textBox:queueText("Welcome to Alienz ! -Spacebar to continue-")
     textBox:queueText("Choose your Starter:")
+    
 
 end
 
 function love.load()
     --optional settings for window
     love.window.setMode(640, 640, {resizable=false, vsync=true, minwidth=640, minheight=640})
+    math.randomseed(os.time())  -- Seed with the current system time
     game = Game()
     textBox = TextBox()
     textBox:queueText("Welcome to Alienz ! -Spacebar to continue-")

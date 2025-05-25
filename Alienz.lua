@@ -14,7 +14,6 @@ function Alienz:new(hp, att, def, level, name, sprite, attacks, diskSpace)
     self.requiredExp = 10 + (level*level)
     self.attacks = attacks
     self.maxAp = 50
-    self.ap = self.maxAp/2
     self.selectedAttack = nil
     self.defending = false
     self.regenRate = 10
@@ -29,6 +28,7 @@ function Alienz:new(hp, att, def, level, name, sprite, attacks, diskSpace)
     self.currAtt = self.att
     self.currDef = self.def
     self.currApRegen = self.regenRate
+    self.ap = self.currApRegen
     
 
 end
@@ -39,9 +39,16 @@ function Alienz:getAlienz(level)
     local att = self.att + ((self.att/10) * (level-1))
     local def = self.def + ((self.def/10) * (level-1))
 
-    local ali = Alienz(hp,att,def,level,self.name, self.sprite, self.attacks, self.diskSpaceValue)
+    local a = {}
+    for i, v in ipairs(self.attacks) do
+        table.insert(a, Attack(v.name, v.power, v.cost, v.animation))
+    end
 
-    ali.goldValue = math.random(5,10) + (math.floor(math.random() * ali.level))
+
+
+    local ali = Alienz(hp,att,def,level,self.name, self.sprite, a, self.diskSpaceValue)
+
+    ali.goldValue = math.random(5,10) + (2 * ali.level)
     ali.exp = 1
 
     return ali
@@ -82,7 +89,7 @@ function Alienz:resetStats()
     self.currAtt = self.att
     self.currDef = self.def
     self.currApRegen = self.regenRate
-    self.ap = self.maxAp/2
+    self.ap = self.currApRegen
     
 
 end

@@ -57,6 +57,7 @@ function Shop:keyPressed(key)
                     if(game.player.gold >= self.items[self.menuOption][2]) then
                         game.player.attUpgrade = game.player.attUpgrade + 0.15
                         game.player.gold = game.player.gold - self.items[self.menuOption][2]
+                        self.items[self.menuOption][2] = self.items[self.menuOption][2] + 1
                     else
                         textBox:queueText("Not enough gold")
                     end
@@ -66,6 +67,7 @@ function Shop:keyPressed(key)
                     if(game.player.gold >= self.items[self.menuOption][2]) then
                         game.player.defUpgrade = game.player.defUpgrade + 0.15
                         game.player.gold = game.player.gold - self.items[self.menuOption][2]
+                        self.items[self.menuOption][2] = self.items[self.menuOption][2] + 1
                     else
                         textBox:queueText("Not enough gold")
                     end
@@ -75,6 +77,7 @@ function Shop:keyPressed(key)
                     if(game.player.gold >= self.items[self.menuOption][2]) then
                         game.player.regenUpgrade = game.player.regenUpgrade + 0.15
                         game.player.gold = game.player.gold - self.items[self.menuOption][2]
+                        self.items[self.menuOption][2] = self.items[self.menuOption][2] + 1
                     else
                         textBox:queueText("Not enough gold")
                     end
