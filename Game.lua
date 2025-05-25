@@ -2,6 +2,7 @@ require "Alienz"
 require "Player"
 require "Combat"
 require "Attack"
+require "Shop"
 Game = Object:extend()
 
 
@@ -14,6 +15,8 @@ function Game:new()
     self.music = {}
     table.insert(self.music, love.audio.newSource("music/0_menu.mp3", "stream"))
     table.insert(self.music, love.audio.newSource("music/4_battle.mp3", "stream"))
+    table.insert(self.music, love.audio.newSource("music/Stinger_Victory_1_Master.mp3", "stream"))
+    table.insert(self.music, love.audio.newSource("music/2_town.mp3", "stream"))
     
     self.music[1]:setVolume(0.1)
     self.music[1]:isLooping(true)
@@ -21,8 +24,15 @@ function Game:new()
 
     self.music[2]:setVolume(0.1)
     self.music[2]:isLooping(true)
-    
 
+    self.music[3]:setVolume(0.1)
+
+    self.music[4]:setVolume(0.1)
+    self.music[4]:isLooping(true)
+
+
+    
+    self.shop = Shop()
     self.combat = nil
 
     self.bg = love.graphics.newImage("assets/bg.jpg")
@@ -31,18 +41,18 @@ function Game:new()
     self.attacks = {}
 
     table.insert(self.attacks, Attack("Slash", 10, 10, Animation(lg.newImage("attacks/slash1.png"), 48, 48, 1)))
-    table.insert(self.attacks, Attack("Tackle", 15, 20, Animation(lg.newImage("attacks/slash2.png"), 48, 48, 1)))
-    table.insert(self.attacks, Attack("Flame", 20, 30, Animation(lg.newImage("attacks/fire1.png"), 48, 48, 1)))
-    table.insert(self.attacks, Attack("Wind Slash", 20, 30, Animation(lg.newImage("attacks/leaf1.png"), 48, 48, 1)))
+    table.insert(self.attacks, Attack("Tackle", 15, 15, Animation(lg.newImage("attacks/slash2.png"), 48, 48, 1)))
+    table.insert(self.attacks, Attack("Flame", 20, 20, Animation(lg.newImage("attacks/fire1.png"), 48, 48, 1)))
+    table.insert(self.attacks, Attack("Wind Slash", 20, 20, Animation(lg.newImage("attacks/leaf1.png"), 48, 48, 1)))
 
-    table.insert(self.alienz, Alienz(30,5,4,1,"Mygnite",lg.newImage("alienz/big_alienz0.png"), {self.attacks[1], self.attacks[2], self.attacks[3], self.attacks[4]}))
-    table.insert(self.alienz, Alienz(25,6,5,1,"Ryder",lg.newImage("alienz/big_alienz1.png"), {self.attacks[1], self.attacks[2]}))
-    table.insert(self.alienz, Alienz(15,4,8,1,"Bottlepede",lg.newImage("alienz/big_alienz2.png"), {self.attacks[1], self.attacks[2]}))
-    table.insert(self.alienz, Alienz(38,5,2,1,"Umbrapod",lg.newImage("alienz/big_alienz3.png"), {self.attacks[1], self.attacks[2]}))
-    table.insert(self.alienz, Alienz(20,5,5,1,"Blorp",lg.newImage("alienz/big_alienz4.png"), {self.attacks[1], self.attacks[2]}))
-    table.insert(self.alienz, Alienz(19,6,10,1,"Sporz",lg.newImage("alienz/big_alienz5.png"), {self.attacks[1], self.attacks[2]}))
-    table.insert(self.alienz, Alienz(18,8,8,1,"Ghidle",lg.newImage("alienz/big_alienz6.png"), {self.attacks[1], self.attacks[2]}))
-    table.insert(self.alienz, Alienz(18,8,8,1,"Atoz",lg.newImage("alienz/big_alienz7.png"), {self.attacks[1], self.attacks[2]}))
+    table.insert(self.alienz, Alienz(30,5,4,1,"Mygnite",lg.newImage("alienz/big_alienz0.png"), {self.attacks[1]}, 128))
+    table.insert(self.alienz, Alienz(25,6,5,1,"Ryder",lg.newImage("alienz/big_alienz1.png"), {self.attacks[1]}, 128))
+    table.insert(self.alienz, Alienz(15,4,8,1,"Bottlepede",lg.newImage("alienz/big_alienz2.png"), {self.attacks[2]}, 64))
+    table.insert(self.alienz, Alienz(40,5,2,1,"Umbrapod",lg.newImage("alienz/big_alienz3.png"), {self.attacks[1], self.attacks[3]}, 256))
+    table.insert(self.alienz, Alienz(20,5,5,1,"Blorp",lg.newImage("alienz/big_alienz4.png"), {self.attacks[2]}, 128))
+    table.insert(self.alienz, Alienz(19,6,10,1,"Sporz",lg.newImage("alienz/big_alienz5.png"), {self.attacks[1], self.attacks[2]}, 512))
+    table.insert(self.alienz, Alienz(18,8,8,1,"Ghidle",lg.newImage("alienz/big_alienz6.png"), {self.attacks[3]}, 1024))
+    table.insert(self.alienz, Alienz(18,8,8,1,"Atoz",lg.newImage("alienz/big_alienz7.png"), {self.attacks[4]}, 1024))
 
     table.insert(self.alienzIcon, lg.newImage("alienz/alienz0.png"))
     table.insert(self.alienzIcon, lg.newImage("alienz/alienz1.png"))
@@ -56,9 +66,12 @@ function Game:new()
     self.fontName = love.graphics.newFont("assets/font.ttf",30)
 
     self.option = 2
+    --starts at 0
     self.state = 0
 
-    self.fadeAwayMaxTimer = 1
+    self.tutorial = false -- Should start at True
+
+    self.fadeAwayMaxTimer = 2
     self.fadeAwayTimer = self.fadeAwayMaxTimer
 
 end
@@ -71,15 +84,69 @@ function Game:update(dt)
     end
 
     if(self.combat ~= nil) then
+
         self.combat:update(dt)
+
+        if(self.combat.state == 8 and self.state == 3) then
+
+            self.music[3]:play()
+            self.music[2]:stop()
+
+            textBox:queueText("You deafeated " .. self.combat.enemyAlienz.name)
+            textBox:queueText("Your Alienz gained 10 exp")
+            self.combat.activePlayerAlienz.exp = self.combat.activePlayerAlienz.exp + 10
+            if(self.combat.activePlayerAlienz.exp >= self.combat.activePlayerAlienz.requiredExp) then
+                self.combat.activePlayerAlienz:levelUp()
+                textBox:queueText(self.combat.activePlayerAlienz.name .. " Leveled Up to level " .. self.combat.activePlayerAlienz.level)
+            end
+            
+            textBox:queueText("You also gained " .. self.combat.enemyAlienz.goldValue .. " gold")
+            self.player.gold = self.player.gold + self.combat.enemyAlienz.goldValue
+
+            self.state = 4
+            self.fadeAwayTimer = self.fadeAwayMaxTimer
+
+        end
+
+    end
+
+    if(self.state == 4 and textBox.active == false) then
+        self.fadeAwayTimer = self.fadeAwayTimer - dt
+
+        if(self.fadeAwayTimer <= 0) then
+            self.combat:endCombat()
+            self.combat = nil
+            self.fadeAwayTimer = 0
+            self.state = 5
+            self.music[3]:stop()
+            self.music[4]:play()
+        end
+
+    end
+
+    if(self.state == 5) then
+        self.shop:update(dt)
+    end
+
+    if(self.state == 5 and self.fadeAwayTimer < self.fadeAwayMaxTimer) then
+        self.fadeAwayTimer = self.fadeAwayTimer+dt
+
+         if((self.fadeAwayTimer >= self.fadeAwayMaxTimer) and self.tutorial == true) then
+            self.tutorial = false
+            textBox:queueText("Between battles you will enter the shop")
+            textBox:queueText("Using the gold you get from defeating Alienz")
+            textBox:queueText("You can either upgrade your disk's space")
+            textBox:queueText("Or buy significant upgrades for your Alienz")
+         end
     end
 
 
     if(self.state == 3 and self.fadeAwayTimer < self.fadeAwayMaxTimer) then
+
         self.fadeAwayTimer = self.fadeAwayTimer+dt
         self.combat.state = 0
 
-        if(self.fadeAwayTimer >= self.fadeAwayMaxTimer) then
+        if((self.fadeAwayTimer >= self.fadeAwayMaxTimer) and self.tutorial == true) then
             textBox:queueText("Battle begins here")
             textBox:queueText("Attacking costs AP -attack points-")
             textBox:queueText("Defending reduces the next incoming attack and recovers AP")
@@ -87,6 +154,9 @@ function Game:update(dt)
             textBox:queueText("Reduce enemy HP before uploading it to your disk")
             textBox:queueText("Doing so will make it take up less space")
             textBox:queueText("Be careful though, you have limited disk space!")
+            
+        elseif(self.fadeAwayTimer >= self.fadeAwayMaxTimer) then
+            textBox:queueText("A wild " .. self.combat.enemyAlienz.name .. " appears")
         end
     end
 
@@ -110,6 +180,10 @@ function Game:keyPressed(key)
 
     if(self.combat ~= nil) then
         self.combat:keyPressed(key)
+    end
+
+    if(self.state == 5) then
+        self.shop:keyPressed(key)
     end
 
     if(self.state == 1) then
@@ -144,6 +218,7 @@ function Game:keyPressed(key)
             end
 
             self.state = 2
+            self.player.diskSpace = self.player.diskSpace + self.player.myAlienz[1].diskSpace
 
             textBox:queueText(self.player.myAlienz[1].name .. " makes an excellent choice !")
             textBox:queueText("Let me upload him to your disk...")
@@ -159,8 +234,12 @@ end
 
 function Game:draw()
     
+    if(self.state == 5) then
+        local alpha = map(self.fadeAwayTimer, self.fadeAwayMaxTimer, 0, 1, 0)
+        self.shop:draw(alpha)
+    end
 
-    if(self.state == 3) then
+    if(self.combat ~= nil) then
         local alpha = map(self.fadeAwayTimer, self.fadeAwayMaxTimer, 0, 1, 0)
 
         lg.push()

@@ -7,6 +7,8 @@ function Combat:new(enemyAlienz, activePlayerAlienz)
     self.enemyAlienz = enemyAlienz
     self.activePlayerAlienz = activePlayerAlienz
 
+    self.activePlayerAlienz:applyBuffs(game.player.attUpgrade, game.player.defUpgrade, game.player.regenUpgrade)
+
     self.enemyAlienz.ap = 0--self.enemyAlienz.maxAp/2
     self.activePlayerAlienz.ap = self.activePlayerAlienz.maxAp/2
 
@@ -41,7 +43,7 @@ end
 
 function Combat:dealDamage(attacker, target)
 
-    local d = attacker.selectedAttack.power * (attacker.att / target.def)
+    local d = attacker.selectedAttack.power * (attacker.currAtt / target.currDef)
     if(target.defending == true) then
         d = d/2
         target.defending = false
@@ -56,6 +58,12 @@ function Combat:dealDamage(attacker, target)
     if(target.currentHp < 0) then
         target.currentHp = 0
     end
+
+end
+
+function Combat:endCombat()
+
+    self.activePlayerAlienz:resetStats()
 
 end
 
@@ -108,10 +116,11 @@ function Combat:update(dt)
                 local r = math.random(1, #availableAttacks)
                 self.enemyAlienz.selectedAttack = availableAttacks[r]
                 self.attackState = 4
+                self.enemyAlienz.ap = self.enemyAlienz.ap - self.enemyAlienz.selectedAttack.cost
                 local m = self.enemyAlienz.name .. " used " .. self.enemyAlienz.selectedAttack.name .. "!"
                 textBox:queueText(m)
             else
-                self.enemyAlienz.ap = self.enemyAlienz.ap + self.enemyAlienz.regenRate
+                self.enemyAlienz.ap = self.enemyAlienz.ap + self.enemyAlienz.currApRegen
                 if(self.enemyAlienz.ap > self.enemyAlienz.maxAp) then
                     self.enemyAlienz.ap = self.enemyAlienz.maxAp
                 end
@@ -119,11 +128,7 @@ function Combat:update(dt)
                 self.state = 4
                 textBox:queueText(self.enemyAlienz.name .. " is defending your next attack...")
             end
-
-
         end
-
-
     end
 
     if(self.state == 0) then
@@ -142,7 +147,8 @@ function Combat:update(dt)
             self:dealDamage(self.activePlayerAlienz, self.enemyAlienz)
 
             if(self.enemyAlienz.currentHp == 0) then
-                --Combat is GG
+
+                self.state = 8
 
             else
 
@@ -211,6 +217,11 @@ function Combat:keyPressed(key)
 
         end
 
+        if(key == "backspace" or key == "escape" or key == "x") then
+            self.menuOption = 1
+            self.menuState = 0
+        end
+
         if(key == "space") then
 
             if(self.activePlayerAlienz.attacks[self.menuOption].cost <= self.activePlayerAlienz.ap) then
@@ -218,6 +229,7 @@ function Combat:keyPressed(key)
                 self.menuState = 0
                 self.attackState = 0
                 self.activePlayerAlienz.selectedAttack = self.activePlayerAlienz.attacks[self.menuOption]
+                self.activePlayerAlienz.ap = self.activePlayerAlienz.ap - self.activePlayerAlienz.selectedAttack.cost
                 local m = self.activePlayerAlienz.name .. " used " .. self.activePlayerAlienz.selectedAttack.name .. "!"
                 textBox:queueText(m)
             else
@@ -252,6 +264,7 @@ function Combat:keyPressed(key)
 
             if(self.menuOption == 2) then
                 self.activePlayerAlienz.defending = true
+                self.activePlayerAlienz.ap = self.activePlayerAlienz.ap + self.activePlayerAlienz.currApRegen
                 textBox:queueText(self.activePlayerAlienz.name .. " is defending...")
                 self.state = 5
             end
@@ -277,10 +290,22 @@ function Combat:draw(alpha)
     lg.pop()
 
     lg.push()
+
         lg.translate(playerPos[1], playerPos[2])
         local per = self.activePlayerAlienz.currentHp/self.activePlayerAlienz.hp
+        love.graphics.setColor(0, 0, 0, 0.5)
+        love.graphics.rectangle("fill", -self.activePlayerAlienz.sprite:getWidth()*2,0,7,-self.activePlayerAlienz.sprite:getHeight()*2)
         love.graphics.setColor(0.8, 0.1, 0.2, 1)
-        love.graphics.rectangle("fill", -self.activePlayerAlienz.sprite:getWidth()*2,0,7,-self.activePlayerAlienz.sprite:getHeight()*2*(per))      
+        love.graphics.rectangle("fill", -self.activePlayerAlienz.sprite:getWidth()*2,0,7,-self.activePlayerAlienz.sprite:getHeight()*2*(per))
+
+        local per = self.activePlayerAlienz.ap/self.activePlayerAlienz.maxAp
+        lg.translate(-15, 0)
+        love.graphics.setColor(0, 0, 0, 0.5)
+        love.graphics.rectangle("fill", -self.activePlayerAlienz.sprite:getWidth()*2,0,7,-self.activePlayerAlienz.sprite:getHeight()*2)
+        love.graphics.setColor(0.1, 0.1, 0.8, 1)
+        love.graphics.rectangle("fill", -self.activePlayerAlienz.sprite:getWidth()*2,0,7,-self.activePlayerAlienz.sprite:getHeight()*2*(per))
+        
+
     lg.pop()
 
     lg.push()
@@ -306,8 +331,17 @@ function Combat:draw(alpha)
     lg.push()
         lg.translate(enemyPos[1], enemyPos[2])
         local per = self.enemyAlienz.currentHp/self.enemyAlienz.hp
+        love.graphics.setColor(0, 0, 0, 0.5)
+        love.graphics.rectangle("fill", self.enemyAlienz.sprite:getWidth()*2,0,7,-self.enemyAlienz.sprite:getHeight()*2)
         love.graphics.setColor(0.8, 0.1, 0.2, 1)
-        love.graphics.rectangle("fill", self.enemyAlienz.sprite:getWidth()*2,0,7,-self.enemyAlienz.sprite:getHeight()*2*(per))      
+        love.graphics.rectangle("fill", self.enemyAlienz.sprite:getWidth()*2,0,7,-self.enemyAlienz.sprite:getHeight()*2*(per))  
+        
+        local per = self.enemyAlienz.ap/self.enemyAlienz.maxAp
+        lg.translate(15,0)
+        love.graphics.setColor(0, 0, 0, 0.5)
+        love.graphics.rectangle("fill", self.enemyAlienz.sprite:getWidth()*2,0,7,-self.enemyAlienz.sprite:getHeight()*2)
+        love.graphics.setColor(0.1, 0.1, 0.8, 1)
+        love.graphics.rectangle("fill", self.enemyAlienz.sprite:getWidth()*2,0,7,-self.enemyAlienz.sprite:getHeight()*2*(per))
     lg.pop()
 
     lg.push()

@@ -18,6 +18,8 @@ function TextBox:new()
     self.activeText = ""
     self.active = false
 
+    self.font = love.graphics.newFont("assets/font.ttf",20)
+
     self.blip = love.audio.newSource("assets/blip.mp3", "stream")
     self.confirm = love.audio.newSource("assets/confirm.wav", "stream")
 
@@ -138,6 +140,8 @@ function TextBox:update(dt)
 end
 
 function TextBox:draw()
+
+    lg.setFont(self.font)
 
     if(self.active == true) then
         local w = 3.5
