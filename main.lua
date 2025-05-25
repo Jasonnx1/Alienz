@@ -10,7 +10,10 @@ font = love.graphics.newFont("assets/font.ttf",20)
 function love.reload()
 
     game = Game()
+    game.tutorialSkip = true
     textBox = TextBox()
+    textBox:queueText("Welcome to Alienz ! -Spacebar to continue-")
+    textBox:queueText("Choose your Starter:")
 
 end
 
@@ -42,6 +45,12 @@ function map(val, start, e, min, max)
 end
 
 function love.keypressed(key)
+
+    if(game.gameOver == true and key == "r") then
+        game:reset()
+        textBox:reset()
+        love:reload()
+    end
 
     if(textBox.active == true) then
         textBox:keyPressed(key)

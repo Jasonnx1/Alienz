@@ -81,7 +81,7 @@ function Shop:keyPressed(key)
 
                 if(self.menuOption == 4) then
                     if(game.player.gold >= self.items[self.menuOption][2]) then
-                        if(game.player.diskSpaceMax < 1024) then
+                        if(game.player.diskSpaceMax < 2048) then
                             game.player.gold = game.player.gold - self.items[self.menuOption][2]
                             game.player.diskSpaceMax = game.player.diskSpaceMax * 2
                         else
@@ -108,6 +108,7 @@ function Shop:keyPressed(key)
                             if(alreadyHasMove == false) then
                                 game.player.gold = game.player.gold - self.items[self.menuOption][2]
                                 table.insert(game.player.myAlienz[1].attacks, game.attacks[4])
+                                textBox:queueText(game.player.myAlienz[1].name .. " learned Wind Slash")
                             else
                                 textBox:queueText(game.player.myAlienz[1].name .. " already has that attack")
                             end
@@ -137,6 +138,7 @@ function Shop:keyPressed(key)
                             if(alreadyHasMove == false) then
                                 game.player.gold = game.player.gold - self.items[self.menuOption][2]
                                 table.insert(game.player.myAlienz[1].attacks, game.attacks[3])
+                                textBox:queueText(game.player.myAlienz[1].name .. " learned Flame")
                             else
                                 textBox:queueText(game.player.myAlienz[1].name .. " already has that attack")
                             end

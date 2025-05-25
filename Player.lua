@@ -5,7 +5,7 @@ Player = Object:extend()
 function Player:new()
 
     self.myAlienz = {}
-    self.startingGold = 999
+    self.startingGold = 0
     self.gold = self.startingGold
 
     self.diskSpaceMax = 128

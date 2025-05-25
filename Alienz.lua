@@ -14,12 +14,16 @@ function Alienz:new(hp, att, def, level, name, sprite, attacks, diskSpace)
     self.requiredExp = 10 + (level*level)
     self.attacks = attacks
     self.maxAp = 50
-    self.ap = self.maxAp
+    self.ap = self.maxAp/2
     self.selectedAttack = nil
     self.defending = false
     self.regenRate = 10
     self.goldValue = 0
-    self.diskSpace = diskSpace
+
+    self.diskSpaceValue = diskSpace
+    self.diskSpaceMax = self.diskSpaceValue * level
+    self.diskSpace = self.diskSpaceMax
+    
 
     -- Subject to get buffed
     self.currAtt = self.att
@@ -35,7 +39,7 @@ function Alienz:getAlienz(level)
     local att = self.att + ((self.att/10) * (level-1))
     local def = self.def + ((self.def/10) * (level-1))
 
-    local ali = Alienz(hp,att,def,level,self.name, self.sprite, self.attacks, self.diskSpace)
+    local ali = Alienz(hp,att,def,level,self.name, self.sprite, self.attacks, self.diskSpaceValue)
 
     ali.goldValue = math.random(5,10)
     ali.exp = 1  
@@ -55,6 +59,15 @@ function Alienz:levelUp()
 
 end
 
+function Alienz:adjustDiskSpace()
+
+    local p = self.currentHp / self.hp
+
+    self.diskSpace = math.floor(self.diskSpaceMax * p)
+
+
+end
+
 function Alienz:applyBuffs(a, d, r)
 
     self.currAtt = self.att * a
@@ -69,6 +82,7 @@ function Alienz:resetStats()
     self.currAtt = self.att
     self.currDef = self.def
     self.currApRegen = self.regenRate
+    self.ap = self.maxAp/2
     
 
 end

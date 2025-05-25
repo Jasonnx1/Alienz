@@ -9,8 +9,7 @@ function Combat:new(enemyAlienz, activePlayerAlienz)
 
     self.activePlayerAlienz:applyBuffs(game.player.attUpgrade, game.player.defUpgrade, game.player.regenUpgrade)
 
-    self.enemyAlienz.ap = 0--self.enemyAlienz.maxAp/2
-    self.activePlayerAlienz.ap = self.activePlayerAlienz.maxAp/2
+
 
     --State:
     -- 0 = waiting on text
@@ -28,6 +27,9 @@ function Combat:new(enemyAlienz, activePlayerAlienz)
     -- 3 = Capture - no Menu
     self.menuState = 0
     self.menuOption = 1
+    self.captured = false
+
+
 
     --Attack States:
     -- 0 = Text Display of Attack
@@ -145,6 +147,7 @@ function Combat:update(dt)
         if(self.attackState == 2) then
 
             self:dealDamage(self.activePlayerAlienz, self.enemyAlienz)
+            self.enemyAlienz:adjustDiskSpace()
 
             if(self.enemyAlienz.currentHp == 0) then
 
@@ -171,7 +174,11 @@ function Combat:update(dt)
             self:dealDamage(self.enemyAlienz, self.activePlayerAlienz)
 
             if(self.activePlayerAlienz.currentHp == 0) then
-                --Combat is KO
+                
+                self.state = 9
+                textBox:queueText(self.activePlayerAlienz.name .. " was erased")
+                game.music[2]:stop()
+                game.music[5]:play()
 
             else
 
@@ -265,18 +272,34 @@ function Combat:keyPressed(key)
             if(self.menuOption == 2) then
                 self.activePlayerAlienz.defending = true
                 self.activePlayerAlienz.ap = self.activePlayerAlienz.ap + self.activePlayerAlienz.currApRegen
+
+                self.activePlayerAlienz.ap = self.activePlayerAlienz.ap + self.activePlayerAlienz.currApRegen
+                if(self.activePlayerAlienz.ap > self.activePlayerAlienz.maxAp) then
+                    self.activePlayerAlienz.ap = self.activePlayerAlienz.maxAp
+                end
+
                 textBox:queueText(self.activePlayerAlienz.name .. " is defending...")
                 self.state = 5
             end
 
             if(self.menuOption == 3) then
 
-                if((game.player.diskSpaceMax - game.player.diskSpace) >= self.enemyAlienz.diskSpace) then
-                    
+                if((game.player.diskSpaceMax) >= self.enemyAlienz.diskSpace) then
+                        textBox:queueText("You successfully uploaded" .. self.enemyAlienz.name)
+                        game.player.diskSpace = 0
+                        for i, v in ipairs(game.player.myAlienz) do
+                            print("before" .. tostring(#game.player.myAlienz))
+                            table.remove(game.player.myAlienz, #game.player.myAlienz)
+                            print("after" .. tostring(#game.player.myAlienz))
+                        end
+                        table.insert(game.player.myAlienz, 1, self.enemyAlienz)
+                        game.player.diskSpace = self.enemyAlienz.diskSpace
+                        self.state = 8
+                        self.captured = true
                 else
-                    textBox:queueText("Not enough space to upload him yet")
+                    textBox:queueText("Not enough space to upload him")
                 end
-                
+
             end
         end
     end
@@ -319,9 +342,15 @@ function Combat:draw(alpha)
     lg.pop()
 
     lg.push()
-        lg.translate(playerPos[1], playerPos[2])
+        lg.translate(playerPos[1], playerPos[2] + 5)
         lg.setColor(love.math.colorFromBytes(63, 166, 94, (alpha*255)))
         lg.print(self.activePlayerAlienz.name,-(self.font:getWidth(self.activePlayerAlienz.name)/2),0)   
+    lg.pop()
+
+    lg.push()
+        lg.translate(playerPos[1] , playerPos[2] + self.activePlayerAlienz.sprite:getHeight())
+        lg.setColor(1,1,1,alpha)
+        lg.print("Lv: " .. tostring(self.activePlayerAlienz.level),-(self.font:getWidth("Lv: " .. tostring(self.activePlayerAlienz.level))/2),0) 
     lg.pop()
 
 
@@ -355,9 +384,22 @@ function Combat:draw(alpha)
     lg.pop()
 
     lg.push()
-        lg.translate(enemyPos[1], enemyPos[2])
+        lg.translate(enemyPos[1], enemyPos[2] + 5)
         lg.setColor(love.math.colorFromBytes(199, 28, 79, (alpha*255)))
         lg.print(self.enemyAlienz.name,-(self.font:getWidth(self.enemyAlienz.name)/2),0)   
+    lg.pop()
+
+        lg.push()
+        lg.translate(enemyPos[1], enemyPos[2])
+        lg.setFont(self.font)
+        lg.setColor(1,1,1,alpha)
+        lg.print(tostring(self.enemyAlienz.diskSpace) .. "mb",-(self.font:getWidth(tostring(self.enemyAlienz.diskSpace) .. "mb")/2),-self.enemyAlienz.sprite:getHeight()*2.5)
+    lg.pop()
+
+    lg.push()
+        lg.translate(enemyPos[1] , enemyPos[2] + self.enemyAlienz.sprite:getHeight())
+        lg.setColor(1,1,1,alpha)
+        lg.print("Lv: " .. tostring(self.enemyAlienz.level),-(self.font:getWidth("Lv: " .. tostring(self.enemyAlienz.level))/2),0) 
     lg.pop()
 
     if(self.state == 2 and self.attackState == 1) then
@@ -427,6 +469,11 @@ function Combat:draw(alpha)
                 lg.push()
                     lg.setColor(1,1,1,alpha)
                     lg.translate(lg.getWidth()/2, lg.getHeight()/2+lg.getHeight()/4+(lg.getHeight()/16*i))
+                    if(game.player.diskSpaceMax >= self.enemyAlienz.diskSpace) then
+                        lg.setColor(1,1,1,alpha)
+                    else
+                        lg.setColor(0.5,0.5,0.5,alpha)
+                    end
                     lg.print("Capture",-(self.font:getWidth("Capture")/2),0)
                     if(self.menuOption == 3) then
 

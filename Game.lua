@@ -17,6 +17,7 @@ function Game:new()
     table.insert(self.music, love.audio.newSource("music/4_battle.mp3", "stream"))
     table.insert(self.music, love.audio.newSource("music/Stinger_Victory_1_Master.mp3", "stream"))
     table.insert(self.music, love.audio.newSource("music/2_town.mp3", "stream"))
+    table.insert(self.music, love.audio.newSource("music/5_defeat.mp3", "stream"))
     
     self.music[1]:setVolume(0.1)
     self.music[1]:isLooping(true)
@@ -30,12 +31,15 @@ function Game:new()
     self.music[4]:setVolume(0.1)
     self.music[4]:isLooping(true)
 
+    self.music[5]:setVolume(0.1)
+    self.music[5]:isLooping(false)
 
-    
     self.shop = Shop()
     self.combat = nil
 
     self.bg = love.graphics.newImage("assets/bg.jpg")
+    self.dedBg = love.graphics.newImage("assets/ded.jpg")
+    self.dedFont = love.graphics.newFont("assets/font.ttf",25)
     self.combatBg = love.graphics.newImage("assets/combatBg.jpg")
 
     self.attacks = {}
@@ -45,14 +49,14 @@ function Game:new()
     table.insert(self.attacks, Attack("Flame", 20, 20, Animation(lg.newImage("attacks/fire1.png"), 48, 48, 1)))
     table.insert(self.attacks, Attack("Wind Slash", 20, 20, Animation(lg.newImage("attacks/leaf1.png"), 48, 48, 1)))
 
-    table.insert(self.alienz, Alienz(30,5,4,1,"Mygnite",lg.newImage("alienz/big_alienz0.png"), {self.attacks[1]}, 128))
-    table.insert(self.alienz, Alienz(25,6,5,1,"Ryder",lg.newImage("alienz/big_alienz1.png"), {self.attacks[1]}, 128))
-    table.insert(self.alienz, Alienz(15,4,8,1,"Bottlepede",lg.newImage("alienz/big_alienz2.png"), {self.attacks[2]}, 64))
-    table.insert(self.alienz, Alienz(40,5,2,1,"Umbrapod",lg.newImage("alienz/big_alienz3.png"), {self.attacks[1], self.attacks[3]}, 256))
-    table.insert(self.alienz, Alienz(20,5,5,1,"Blorp",lg.newImage("alienz/big_alienz4.png"), {self.attacks[2]}, 128))
-    table.insert(self.alienz, Alienz(19,6,10,1,"Sporz",lg.newImage("alienz/big_alienz5.png"), {self.attacks[1], self.attacks[2]}, 512))
-    table.insert(self.alienz, Alienz(18,8,8,1,"Ghidle",lg.newImage("alienz/big_alienz6.png"), {self.attacks[3]}, 1024))
-    table.insert(self.alienz, Alienz(18,8,8,1,"Atoz",lg.newImage("alienz/big_alienz7.png"), {self.attacks[4]}, 1024))
+    table.insert(self.alienz, Alienz(30,5,4,1,"Mygnite",lg.newImage("alienz/big_alienz0.png"), {self.attacks[1]}, 64))
+    table.insert(self.alienz, Alienz(25,6,5,1,"Ryder",lg.newImage("alienz/big_alienz1.png"), {self.attacks[1]}, 64))
+    table.insert(self.alienz, Alienz(15,4,8,1,"Bottlepede",lg.newImage("alienz/big_alienz2.png"), {self.attacks[2]}, 32))
+    table.insert(self.alienz, Alienz(40,5,2,1,"Umbrapod",lg.newImage("alienz/big_alienz3.png"), {self.attacks[1], self.attacks[3]}, 64))
+    table.insert(self.alienz, Alienz(20,5,5,1,"Blorp",lg.newImage("alienz/big_alienz4.png"), {self.attacks[2]}, 64))
+    table.insert(self.alienz, Alienz(19,6,10,1,"Sporz",lg.newImage("alienz/big_alienz5.png"), {self.attacks[1], self.attacks[2]}, 64))
+    table.insert(self.alienz, Alienz(18,8,8,1,"Ghidle",lg.newImage("alienz/big_alienz6.png"), {self.attacks[3]}, 128))
+    table.insert(self.alienz, Alienz(18,8,8,1,"Atoz",lg.newImage("alienz/big_alienz7.png"), {self.attacks[4]}, 128))
 
     table.insert(self.alienzIcon, lg.newImage("alienz/alienz0.png"))
     table.insert(self.alienzIcon, lg.newImage("alienz/alienz1.png"))
@@ -64,7 +68,6 @@ function Game:new()
     table.insert(self.alienzIcon, lg.newImage("alienz/alienz7.png"))
 
     self.player = Player()
-    table.insert(self.player.myAlienz, self.alienz[2]:getAlienz(1)) -- to be removed
 
     self.fontName = love.graphics.newFont("assets/font.ttf",30)
 
@@ -73,12 +76,23 @@ function Game:new()
     self.state = 0
 
     self.tutorial = true -- Should start at True
+    self.tutorialSkip = false
 
     self.fadeAwayMaxTimer = 2
     self.fadeAwayTimer = self.fadeAwayMaxTimer
 
     self.fightCounter = 1
     self.fightLevel = 1
+
+    self.gameOver = false
+
+end
+
+function Game:reset()
+
+    for i, v in ipairs(self.music) do
+        v:stop()
+    end
 
 end
 
@@ -87,31 +101,32 @@ function Game:nextFight()
     self.fightCounter = self.fightCounter + 1
 
 
-
-    local r = math.random(1,8)
+    local r = 1
 
 
     if(self.fightCounter < 3) then
-        local r = math.random(1,3)
+        r = math.random(1,3)
 
         self.fightLevel = self.fightLevel + 1
        
         
     elseif(self.fightCounter < 5) then
-        local r = math.random(1,6)
+        r = math.random(1,6)
 
         self.fightLevel = self.fightLevel + 5
     
 
     elseif(self.fightCounter < 8) then
-        local r = math.random(1,8)
+        r = math.random(1,8)
         self.fightLevel = self.fightLevel * 1.5
     end
 
     self.fightLevel = math.floor(self.fightLevel)
-
-
     local a = self.alienz[r]:getAlienz(self.fightLevel)
+
+    if(self.fightCounter < 3) then
+        a.ap = 0
+    end
 
     return a
 
@@ -120,8 +135,17 @@ end
 
 function Game:update(dt)
 
+
     if(textBox.active == false and self.state == 0) then
         self.state = 1
+    end
+
+    if(self.state == 10) then
+        self.fadeAwayTimer = self.fadeAwayTimer+dt
+
+        if(self.fadeAwayTimer > self.fadeAwayMaxTimer) then
+            self.fadeAwayTimer = self.fadeAwayMaxTimer
+        end
     end
 
     if(self.combat ~= nil) then
@@ -133,21 +157,42 @@ function Game:update(dt)
             self.music[3]:play()
             self.music[2]:stop()
 
-            textBox:queueText("You deafeated " .. self.combat.enemyAlienz.name)
-            textBox:queueText("Your Alienz gained 10 exp")
-            self.combat.activePlayerAlienz.exp = self.combat.activePlayerAlienz.exp + 10
-            if(self.combat.activePlayerAlienz.exp >= self.combat.activePlayerAlienz.requiredExp) then
-                self.combat.activePlayerAlienz:levelUp()
-                textBox:queueText(self.combat.activePlayerAlienz.name .. " Leveled Up to level " .. self.combat.activePlayerAlienz.level)
-            end
-            
-            textBox:queueText("You also gained " .. self.combat.enemyAlienz.goldValue .. " gold")
-            self.player.gold = self.player.gold + self.combat.enemyAlienz.goldValue
+            if(self.combat.captured == true) then
+                textBox:queueText("You didn't gain gold or experience from uploading " .. self.combat.enemyAlienz.name)
+                self.state = 4
+                self.fadeAwayTimer = self.fadeAwayMaxTimer
+            else
 
-            self.state = 4
-            self.fadeAwayTimer = self.fadeAwayMaxTimer
+                textBox:queueText("You deafeated " .. self.combat.enemyAlienz.name)
+                textBox:queueText("Your Alienz gained 10 exp")
+                self.combat.activePlayerAlienz.exp = self.combat.activePlayerAlienz.exp + 10
+                if(self.combat.activePlayerAlienz.exp >= self.combat.activePlayerAlienz.requiredExp) then
+                    self.combat.activePlayerAlienz:levelUp()
+                    textBox:queueText(self.combat.activePlayerAlienz.name .. " Leveled Up to level " .. self.combat.activePlayerAlienz.level)
+                end
+                
+                textBox:queueText("You also gained " .. self.combat.enemyAlienz.goldValue .. " gold")
+                self.player.gold = self.player.gold + self.combat.enemyAlienz.goldValue
+
+                self.state = 4
+                self.fadeAwayTimer = self.fadeAwayMaxTimer
+
+            end
 
         end
+
+        if(self.combat.state == 9 and textBox.active == false) then
+            self.state = 9
+            self.fadeAwayTimer = self.fadeAwayTimer-dt
+
+            if(self.fadeAwayTimer < 0) then
+                self.gameOver = true
+                self.combat = nil
+                self.state = 10
+            end
+
+        end
+        
 
     end
 
@@ -220,8 +265,15 @@ function Game:update(dt)
             self.fadeAwayTimer = self.fadeAwayTimer-dt
 
             if(self.fadeAwayTimer < 0) then
+
+                if(self.tutorialSkip == true) then
+                    self.tutorial = false
+                end
+
                 self.state = 3
-                self.combat = Combat(self.alienz[3]:getAlienz(1), self.player.myAlienz[1])
+                local tutorialAlienz = self.alienz[3]:getAlienz(1)
+                tutorialAlienz.ap = 0
+                self.combat = Combat(tutorialAlienz, self.player.myAlienz[1])
                 self.music[1]:stop()
                 self.music[2]:play()
             end
@@ -384,7 +436,22 @@ function Game:draw()
         lg.pop()
 
 
+
+
         
+    end
+
+    if(self.state == 10) then
+        lg.push()
+            local alpha = map(self.fadeAwayTimer, self.fadeAwayMaxTimer, 0, 1, 0)
+            lg.setColor(1,1,1,alpha)
+            lg.draw(self.dedBg)
+            lg.translate(lg.getWidth()/2, lg.getHeight()/2)
+            lg.setFont(self.dedFont)
+            lg.print("Your disk was factory reset",-self.dedFont:getWidth("Your disk was factory reset")/2,0)
+            lg.print("Press R to play again",-self.dedFont:getWidth("Press R to play again")/2,50)
+            
+        lg.pop()
     end
 
 end

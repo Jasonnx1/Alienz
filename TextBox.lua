@@ -139,6 +139,11 @@ function TextBox:update(dt)
 
 end
 
+function TextBox:reset()
+    self.blip:stop()
+    self.confirm:stop()
+end
+
 function TextBox:draw()
 
     lg.setFont(self.font)
