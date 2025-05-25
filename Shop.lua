@@ -5,11 +5,11 @@ Shop = Object:extend()
 function Shop:new()
 
     self.shopBg = lg.newImage("assets/shopBg.jpg")
-    self.goldFont = lg.newFont("assets/font.ttf", 40)
+    self.goldFont = lg.newFont("assets/font.ttf", 35)
     self.shopFont = lg.newFont("assets/font.ttf", 30)
     self.font = lg.newFont("assets/font.ttf", 16)
 
-    self.items = {{"Attack Upgrade", 5},{"Defense Upgrade", 5},{"AP Regen Upgrade", 5},{"Disk Upgrade", 8}}
+    self.items = {{"Attack Upgrade", 5},{"Defense Upgrade", 5},{"AP Regen Upgrade", 5},{"Disk Upgrade", 8}, {"Learn Wind Slash", 10}, {"Learn Flame", 10}}
 
     self.menuOption = 1
 
@@ -32,7 +32,7 @@ function Shop:keyPressed(key)
 
             self.menuOption = self.menuOption - 1
             if(self.menuOption < 1) then
-                self.menuOption = 5
+                self.menuOption = 7
             end
             
         end
@@ -42,7 +42,7 @@ function Shop:keyPressed(key)
 
             
             self.menuOption = self.menuOption + 1
-            if(self.menuOption > 5) then
+            if(self.menuOption > 7) then
                 self.menuOption = 1
             end
             
@@ -50,10 +50,10 @@ function Shop:keyPressed(key)
 
         if(key == "space") then
 
-            if(self.menuOption ~= 5) then
+            if(self.menuOption ~= 7) then
                 
                 if(self.menuOption == 1) then
-                    if(game.palyer.gold >= self.items[self.menuOption][2]) then
+                    if(game.player.gold >= self.items[self.menuOption][2]) then
                         game.player.attUpgrade = game.player.attUpgrade + 0.15
                         game.player.gold = game.player.gold - self.items[self.menuOption][2]
                     else
@@ -62,7 +62,7 @@ function Shop:keyPressed(key)
                 end
 
                 if(self.menuOption == 2) then
-                    if(game.palyer.gold >= self.items[self.menuOption][2]) then
+                    if(game.player.gold >= self.items[self.menuOption][2]) then
                         game.player.defUpgrade = game.player.defUpgrade + 0.15
                         game.player.gold = game.player.gold - self.items[self.menuOption][2]
                     else
@@ -71,7 +71,7 @@ function Shop:keyPressed(key)
                 end
 
                 if(self.menuOption == 3) then
-                    if(game.palyer.gold >= self.items[self.menuOption][2]) then
+                    if(game.player.gold >= self.items[self.menuOption][2]) then
                         game.player.regenUpgrade = game.player.regenUpgrade + 0.15
                         game.player.gold = game.player.gold - self.items[self.menuOption][2]
                     else
@@ -80,13 +80,71 @@ function Shop:keyPressed(key)
                 end
 
                 if(self.menuOption == 4) then
-                    if(game.palyer.gold >= self.items[self.menuOption][2]) then
-                        if(game.player.diskSpace < 1024) then
+                    if(game.player.gold >= self.items[self.menuOption][2]) then
+                        if(game.player.diskSpaceMax < 1024) then
                             game.player.gold = game.player.gold - self.items[self.menuOption][2]
-                            game.player.diskSpace = game.player.diskSpace * 2
+                            game.player.diskSpaceMax = game.player.diskSpaceMax * 2
                         else
                             textBox:queueText("Already Max Upgrade")
                         end
+                    else
+                        textBox:queueText("Not enough gold")
+                    end
+                end
+
+                if(self.menuOption == 5) then
+                    if(game.player.gold >= self.items[self.menuOption][2]) then
+                        
+                        if(#game.player.myAlienz[1].attacks < 4) then
+                            local alreadyHasMove = false
+                            for i, v in ipairs(game.player.myAlienz[1].attacks) do
+
+                                if(v.name == "Wind Slash") then
+                                    alreadyHasMove = true
+                                end
+                                
+                            end
+
+                            if(alreadyHasMove == false) then
+                                game.player.gold = game.player.gold - self.items[self.menuOption][2]
+                                table.insert(game.player.myAlienz[1].attacks, game.attacks[4])
+                            else
+                                textBox:queueText(game.player.myAlienz[1].name .. " already has that attack")
+                            end
+                            
+                        else
+                            textBox:queueText(game.player.myAlienz[1].name .. " already has 4 moves")
+                        end
+                        
+                    else
+                        textBox:queueText("Not enough gold")
+                    end
+                end
+
+                if(self.menuOption == 6) then
+                    if(game.player.gold >= self.items[self.menuOption][2]) then
+                        
+                        if(#game.player.myAlienz[1].attacks < 4) then
+                            local alreadyHasMove = false
+                            for i, v in ipairs(game.player.myAlienz[1].attacks) do
+
+                                if(v.name == "Flame") then
+                                    alreadyHasMove = true
+                                end
+                                
+                            end
+
+                            if(alreadyHasMove == false) then
+                                game.player.gold = game.player.gold - self.items[self.menuOption][2]
+                                table.insert(game.player.myAlienz[1].attacks, game.attacks[3])
+                            else
+                                textBox:queueText(game.player.myAlienz[1].name .. " already has that attack")
+                            end
+                            
+                        else
+                            textBox:queueText(game.player.myAlienz[1].name .. " already has 4 moves")
+                        end
+                        
                     else
                         textBox:queueText("Not enough gold")
                     end
@@ -168,14 +226,41 @@ function Shop:draw(alpha)
         lg.translate(0,50)
         lg.setFont(self.font)
         lg.translate((lg.getWidth()/3)/8, 25)
-        lg.print("Done", 0, (250))
+        lg.print("Done", 0, (350))
 
 
-        if(self.menuOption == 5) then
+        if(self.menuOption == 7) then
             lg.setColor(1,1,1,alpha)
-            lg.translate(-5, 250)
+            lg.translate(-5, 350)
             lg.polygon("fill", 0,self.font:getHeight()/2,-7,self.font:getHeight()/2-7, -7,self.font:getHeight()/2+7)
         end
+    lg.pop()
+
+    
+    lg.push()
+        lg.setColor(0,0,0,0.7)
+        lg.rectangle("fill",  lg.getWidth()/2, lg.getHeight()/2, lg.getWidth(), lg.getHeight())
+
+        lg.setColor(0.1,0.8,0.1,alpha)
+        lg.setLineWidth(w)
+        lg.rectangle("line", lg.getWidth()/2-w/2, lg.getHeight()/2-w/2, lg.getWidth()/2, lg.getHeight()/2)
+    lg.pop()
+
+
+    lg.push()
+        lg.translate(lg.getWidth()/2 + lg.getWidth()/4, lg.getHeight()/2)
+        lg.setColor(1,1,1,alpha)
+        lg.setFont(self.shopFont)
+        lg.print("Stats", -self.shopFont:getWidth("Stats")/2,0)
+
+        lg.translate(-lg.getWidth()/4 + w,25)
+        lg.setFont(self.font)
+        
+        lg.print("Att modifier: " .. game.player.attUpgrade, 0, 50)
+        lg.print("Def modifier: " .. game.player.defUpgrade, 0, 100)
+        lg.print("AP modifier: " .. game.player.regenUpgrade, 0, 150)
+        lg.print("Disk: " .. game.player.diskSpace .. "mb" .. " - " .. game.player.diskSpaceMax .. "mb", 0, 200)
+
     lg.pop()
 
 end

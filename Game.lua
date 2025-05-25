@@ -8,7 +8,7 @@ Game = Object:extend()
 
 function Game:new()
 
-    self.player = Player()
+
 
     self.alienz = {}
     self.alienzIcon = {}
@@ -63,16 +63,57 @@ function Game:new()
     table.insert(self.alienzIcon, lg.newImage("alienz/alienz6.png"))
     table.insert(self.alienzIcon, lg.newImage("alienz/alienz7.png"))
 
+    self.player = Player()
+    table.insert(self.player.myAlienz, self.alienz[2]:getAlienz(1)) -- to be removed
+
     self.fontName = love.graphics.newFont("assets/font.ttf",30)
 
     self.option = 2
     --starts at 0
     self.state = 0
 
-    self.tutorial = false -- Should start at True
+    self.tutorial = true -- Should start at True
 
     self.fadeAwayMaxTimer = 2
     self.fadeAwayTimer = self.fadeAwayMaxTimer
+
+    self.fightCounter = 1
+    self.fightLevel = 1
+
+end
+
+function Game:nextFight()
+
+    self.fightCounter = self.fightCounter + 1
+
+
+
+    local r = math.random(1,8)
+
+
+    if(self.fightCounter < 3) then
+        local r = math.random(1,3)
+
+        self.fightLevel = self.fightLevel + 1
+       
+        
+    elseif(self.fightCounter < 5) then
+        local r = math.random(1,6)
+
+        self.fightLevel = self.fightLevel + 5
+    
+
+    elseif(self.fightCounter < 8) then
+        local r = math.random(1,8)
+        self.fightLevel = self.fightLevel * 1.5
+    end
+
+    self.fightLevel = math.floor(self.fightLevel)
+
+
+    local a = self.alienz[r]:getAlienz(self.fightLevel)
+
+    return a
 
 end
 
@@ -126,9 +167,21 @@ function Game:update(dt)
 
     if(self.state == 5) then
         self.shop:update(dt)
+
+        if(self.shop.shoppingDone == true) then
+
+            self.fadeAwayTimer = self.fadeAwayTimer-dt
+
+            if(self.fadeAwayTimer < 0) then
+                self.shop.shoppingDone = false
+                local a = self:nextFight()
+                self.combat = Combat(a, self.player.myAlienz[1])
+                self.state = 2            
+            end    
+        end
     end
 
-    if(self.state == 5 and self.fadeAwayTimer < self.fadeAwayMaxTimer) then
+    if(self.state == 5 and self.fadeAwayTimer < self.fadeAwayMaxTimer and self.shop.shoppingDone == false) then
         self.fadeAwayTimer = self.fadeAwayTimer+dt
 
          if((self.fadeAwayTimer >= self.fadeAwayMaxTimer) and self.tutorial == true) then
@@ -160,7 +213,7 @@ function Game:update(dt)
         end
     end
 
-    if(self.state == 2) then
+    if(self.state == 2 and self.tutorial == true) then
         
         if(textBox.active == false) then
             
@@ -173,6 +226,13 @@ function Game:update(dt)
                 self.music[2]:play()
             end
         end
+    elseif(self.state == 2) then
+        self.fadeAwayTimer = self.fadeAwayTimer-dt
+        if(self.fadeAwayTimer < 0) then
+                self.state = 3
+                self.music[4]:stop()
+                self.music[2]:play()
+            end
     end
 end
 

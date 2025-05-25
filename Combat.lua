@@ -268,6 +268,16 @@ function Combat:keyPressed(key)
                 textBox:queueText(self.activePlayerAlienz.name .. " is defending...")
                 self.state = 5
             end
+
+            if(self.menuOption == 3) then
+
+                if((game.player.diskSpaceMax - game.player.diskSpace) >= self.enemyAlienz.diskSpace) then
+                    
+                else
+                    textBox:queueText("Not enough space to upload him yet")
+                end
+                
+            end
         end
     end
 end
@@ -295,14 +305,14 @@ function Combat:draw(alpha)
         local per = self.activePlayerAlienz.currentHp/self.activePlayerAlienz.hp
         love.graphics.setColor(0, 0, 0, 0.5)
         love.graphics.rectangle("fill", -self.activePlayerAlienz.sprite:getWidth()*2,0,7,-self.activePlayerAlienz.sprite:getHeight()*2)
-        love.graphics.setColor(0.8, 0.1, 0.2, 1)
+        love.graphics.setColor(0.8, 0.1, 0.2, alpha)
         love.graphics.rectangle("fill", -self.activePlayerAlienz.sprite:getWidth()*2,0,7,-self.activePlayerAlienz.sprite:getHeight()*2*(per))
 
         local per = self.activePlayerAlienz.ap/self.activePlayerAlienz.maxAp
         lg.translate(-15, 0)
         love.graphics.setColor(0, 0, 0, 0.5)
         love.graphics.rectangle("fill", -self.activePlayerAlienz.sprite:getWidth()*2,0,7,-self.activePlayerAlienz.sprite:getHeight()*2)
-        love.graphics.setColor(0.1, 0.1, 0.8, 1)
+        love.graphics.setColor(0.1, 0.1, 0.8, alpha)
         love.graphics.rectangle("fill", -self.activePlayerAlienz.sprite:getWidth()*2,0,7,-self.activePlayerAlienz.sprite:getHeight()*2*(per))
         
 
@@ -310,7 +320,7 @@ function Combat:draw(alpha)
 
     lg.push()
         lg.translate(playerPos[1], playerPos[2])
-        lg.setColor(love.math.colorFromBytes(63, 166, 94))
+        lg.setColor(love.math.colorFromBytes(63, 166, 94, (alpha*255)))
         lg.print(self.activePlayerAlienz.name,-(self.font:getWidth(self.activePlayerAlienz.name)/2),0)   
     lg.pop()
 
@@ -333,20 +343,20 @@ function Combat:draw(alpha)
         local per = self.enemyAlienz.currentHp/self.enemyAlienz.hp
         love.graphics.setColor(0, 0, 0, 0.5)
         love.graphics.rectangle("fill", self.enemyAlienz.sprite:getWidth()*2,0,7,-self.enemyAlienz.sprite:getHeight()*2)
-        love.graphics.setColor(0.8, 0.1, 0.2, 1)
+        love.graphics.setColor(0.8, 0.1, 0.2, alpha)
         love.graphics.rectangle("fill", self.enemyAlienz.sprite:getWidth()*2,0,7,-self.enemyAlienz.sprite:getHeight()*2*(per))  
         
         local per = self.enemyAlienz.ap/self.enemyAlienz.maxAp
         lg.translate(15,0)
         love.graphics.setColor(0, 0, 0, 0.5)
         love.graphics.rectangle("fill", self.enemyAlienz.sprite:getWidth()*2,0,7,-self.enemyAlienz.sprite:getHeight()*2)
-        love.graphics.setColor(0.1, 0.1, 0.8, 1)
+        love.graphics.setColor(0.1, 0.1, 0.8, alpha)
         love.graphics.rectangle("fill", self.enemyAlienz.sprite:getWidth()*2,0,7,-self.enemyAlienz.sprite:getHeight()*2*(per))
     lg.pop()
 
     lg.push()
         lg.translate(enemyPos[1], enemyPos[2])
-        lg.setColor(love.math.colorFromBytes(199, 28, 79))
+        lg.setColor(love.math.colorFromBytes(199, 28, 79, (alpha*255)))
         lg.print(self.enemyAlienz.name,-(self.font:getWidth(self.enemyAlienz.name)/2),0)   
     lg.pop()
 
@@ -415,7 +425,7 @@ function Combat:draw(alpha)
 
                 i = i+1
                 lg.push()
-                    lg.setColor(1,1,1)
+                    lg.setColor(1,1,1,alpha)
                     lg.translate(lg.getWidth()/2, lg.getHeight()/2+lg.getHeight()/4+(lg.getHeight()/16*i))
                     lg.print("Capture",-(self.font:getWidth("Capture")/2),0)
                     if(self.menuOption == 3) then
@@ -430,7 +440,7 @@ function Combat:draw(alpha)
                 lg.setFont(self.font)
 
                 lg.push()
-                    lg.setColor(1,1,1)
+                    lg.setColor(1,1,1,alpha)
                     lg.translate(lg.getWidth()/2, lg.getHeight()/2+ lg.getHeight()/4)
                     lg.print("Choose an action",-(self.font:getWidth("Choose an attack")/2),0)
                 lg.pop()
@@ -438,7 +448,7 @@ function Combat:draw(alpha)
 
                 for i, v in ipairs(self.activePlayerAlienz.attacks) do
                     lg.push()
-                        lg.setColor(1,1,1)
+                        lg.setColor(1,1,1,alpha)
                         if(v.cost > self.activePlayerAlienz.ap) then
                             lg.setColor(0.5,0.5,0.5)
                         end

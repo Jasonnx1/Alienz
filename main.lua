@@ -4,18 +4,21 @@ require "TextBox"
 require "Game"
 lg = love.graphics
 local MAX_DT = 0.1
-textBox = TextBox()
-
 font = love.graphics.newFont("assets/font.ttf",20)
 
 
-game = Game()
+function love.reload()
 
+    game = Game()
+    textBox = TextBox()
 
+end
 
 function love.load()
     --optional settings for window
     love.window.setMode(640, 640, {resizable=false, vsync=true, minwidth=200, minheight=200})
+    game = Game()
+    textBox = TextBox()
     textBox:queueText("Welcome to Alienz ! -Spacebar to continue-")
     textBox:queueText("Choose your Starter:")
 end
